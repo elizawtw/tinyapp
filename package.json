@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/elizawtw/tinyapp/issues"
   },
-  "homepage": "https://github.com/elizawtw/tinyapp#readme"
+  "homepage": "https://github.com/elizawtw/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
