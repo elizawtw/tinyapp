@@ -40,19 +40,29 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
-  // console.log(generateRandomString())
+  console.log(res.statusCode);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  console.log(urlDatabase[req.params.shortURL])
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   
   res.render('urls_show', templateVars)
 });
 
+app.get("/u/:shortURL", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const newLongURL = urlDatabase[req.params.shortURL];
+  res.redirect(newLongURL);
+  console.log(res.statusCode); 
+  
+ 
+});
+
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  const newURL = generateRandomString();  //generate random shortURL
+  urlDatabase[newURL] = req.body.longURL; //add new generated shortURL to longURL
+  res.redirect(`/urls/${newURL}`);
+  
 });
 
 app.listen(PORT, () => {
