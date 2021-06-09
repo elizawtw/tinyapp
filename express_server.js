@@ -7,8 +7,8 @@ app.set("view engine", "ejs");
 
 app.use(cookieParser());
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
 //users database
@@ -66,7 +66,11 @@ app.get("/urls/new", (req, res) => {
     urls: urlDatabase, 
     user
   };
-  res.render("urls_new", templateVars);
+
+  if (user_id) {
+    res.render("urls_new", templateVars);
+  }
+  res.redirect("/login");
   
 });
 
@@ -74,7 +78,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const user = req.cookies["id"];
   const templateVars = { 
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL],
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user
   };
   
@@ -83,12 +87,8 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const templateVars = { 
-    shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]
-  };
-  const newLongURL = urlDatabase[req.params.shortURL];
-  res.redirect(newLongURL);  
+ 
+  res.redirect(urlDatabase[req.params.shortURL].longURL);  
  
 });
 //GET /login
@@ -138,7 +138,11 @@ app.post("/register", (req,res) => {
 
 app.post("/urls", (req, res) => {
   const newURL = generateRandomString();  //generate random shortURL
-  urlDatabase[newURL] = req.body.longURL; //add new generated shortURL to longURL
+  const userId = req.cookies["id"];
+  urlDatabase[newURL] = {
+    "longURL": req.body.longURL,
+    "userID": userId
+}; //add new generated shortURL to longURL
   res.redirect(`/urls/${newURL}`);
   
 });
@@ -171,10 +175,10 @@ app.post("/login", (req, res) => {
     if (userPassword === user.password) {
       req.body.id = user.id;
       res.cookie("id", user.id);
-      res.redirect("/urls");
+      return res.redirect("/urls");
     }
   }
-  return res.status(403).send("Email or password not matching");
+    res.status(403).send("Email or password not matching");
 });
 
 app.post("/logout", (req, res) => {
