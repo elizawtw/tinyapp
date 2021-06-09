@@ -22,6 +22,16 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+//find existing email from users object
+const getUserEmail = function (email, obj) {
+  for(const user in obj) {
+    if(obj[user].email === email) {
+     return obj[user].email;
+    }
+  } return undefined;
+}
+
+//generate random URL or ID
 function generateRandomString() {
   let uniqueURL = '';
   const str = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -93,14 +103,25 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req,res) => {
   const userID = generateRandomString();
-  users[userID] = {
-    id: userID,
-    email: req.body.email,
-    password: req.body.password
-  };
-  console.log(users)
-  res.cookie("id", userID);
-  res.redirect("/urls");
+    
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+
+  if (userEmail === "" || userPassword === "") {
+    console.log('empty string');
+    res.status(400).send("Please fill in email and password");
+  }
+  if(!getUserEmail(userEmail, users)) {
+    users[userID] = {
+      id: userID,
+      email: req.body.email,
+      password: req.body.password
+    };
+    res.cookie("id", userID);
+    res.redirect("/urls");
+  }
+  return res.status(400).send("Already registered with this email address.")
+  
 })
 
 app.post("/urls", (req, res) => {
