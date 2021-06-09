@@ -22,16 +22,17 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-//find existing email from users object
+//Function - find existing email from users object
 const getUserEmail = function (email, obj) {
-  for(const user in obj) {
-    if(obj[user].email === email) {
-     return obj[user].email;
+  for(const item in obj) {
+    const user = obj[item];
+    if(user.email === email) {
+     return user;
     }
-  } return undefined;
+  } return null;
 }
 
-//generate random URL or ID
+//Function - generate random URL or ID
 function generateRandomString() {
   let uniqueURL = '';
   const str = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -40,6 +41,7 @@ function generateRandomString() {
   }
   return uniqueURL;
 }
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -89,6 +91,16 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(newLongURL);  
  
 });
+//GET /login
+app.get("/login", (req, res) => {
+  const user_id = req.cookies["id"];
+  const user = users[user_id]
+  const templateVars = { 
+    urls: urlDatabase, 
+    user
+  };
+  res.render("urls_login", templateVars)
+})
 
 //registrations
 app.get("/register", (req, res) => {
@@ -118,9 +130,9 @@ app.post("/register", (req,res) => {
       password: req.body.password
     };
     res.cookie("id", userID);
-    res.redirect("/urls");
+    return res.redirect("/urls");
   }
-  return res.status(400).send("Already registered with this email address.")
+   res.status(400).send("Already registered with this email address.")
   
 })
 
@@ -148,8 +160,21 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 //user login
 app.post("/login", (req, res) => {
-  res.cookie("id", users.userID);
-  res.redirect("/urls");
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  const user = getUserEmail(userEmail, users);
+  
+  if(!user) {
+    return res.status(403).send("Email cannot be found");
+  }
+  if (user) {
+    if (userPassword === user.password) {
+      req.body.id = user.id;
+      res.cookie("id", user.id);
+      res.redirect("/urls");
+    }
+  }
+  return res.status(403).send("Email or password not matching");
 });
 
 app.post("/logout", (req, res) => {
