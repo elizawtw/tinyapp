@@ -21,13 +21,7 @@ const urlDatabase = {
 };
 
 //users database
-const users = {
-  "123tyu": {
-    id: "123tyu",
-    email: "alizawong@gmail.com",
-    password: "1234abc"
-  }
-};
+const users = {};
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
