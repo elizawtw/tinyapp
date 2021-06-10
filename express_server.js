@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
 const PORT = 8080; // default port 8080
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 app.set("view engine", "ejs");
 
@@ -125,7 +127,8 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars)
 })
 
-//registrations
+//----registrations----
+
 app.get("/register", (req, res) => {
   const user_id = req.cookies["id"];
   const user = users[user_id]
@@ -149,9 +152,10 @@ app.post("/register", (req,res) => {
   if(!getUserEmail(userEmail, users)) {
     users[userID] = {
       id: userID,
-      email: req.body.email,
-      password: req.body.password
+      email: userEmail,
+      password: bcrypt.hashSync(userPassword,saltRounds)
     };
+    console.log('registration', users[userID])
     res.cookie("id", userID);
     return res.redirect("/urls");
   }
@@ -202,17 +206,19 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
   res.send("You are not authorized!");
 });
-//user login
+
+// ----user login ----
 app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   const user = getUserEmail(userEmail, users);
-  
+  console.log('login',user)
+  console.log('login password', user.password)
   if(!user) {
     return res.status(403).send("Email cannot be found");
   }
   if (user) {
-    if (userPassword === user.password) {
+    if (bcrypt.compareSync(userPassword, user.password)) {
       req.body.id = user.id;
       res.cookie("id", user.id);
       return res.redirect("/urls");
