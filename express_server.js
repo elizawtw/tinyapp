@@ -12,7 +12,13 @@ const urlDatabase = {
 };
 
 //users database
-const users = {}
+const users = {
+  "123tyu": {
+    id: "123tyu",
+    email: "alizawong@gmail.com",
+    password: "1234abc"
+  }
+};
 
 
 const bodyParser = require("body-parser");
@@ -42,6 +48,16 @@ function generateRandomString() {
   return uniqueURL;
 }
 
+//Function - return urls where the userID is equal to id of currently logged in user
+const urlsForUserId = function(id, database) {
+  let urlsUserId =  {};
+  for(const shortURL in database) {
+    if(database[shortURL].userID === id) {
+      urlsUserId[shortURL] = database[shortURL];
+    }
+  } return urlsUserId;
+}
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -49,14 +65,14 @@ app.get("/urls.json", (req, res) => {
 
 
 app.get("/urls", (req, res) => {
-  const user_id = req.cookies["id"];
-  const user = users[user_id]
+  const userId = req.cookies["id"];
+  const user = users[userId]
   const templateVars = { 
-    urls: urlDatabase, 
+    urls: urlsForUserId(userId, urlDatabase), 
     user
   };
-  
-  res.render('urls_index', templateVars)
+  return res.render('urls_index', templateVars);
+
 });
 
 app.get("/urls/new", (req, res) => {
@@ -68,7 +84,7 @@ app.get("/urls/new", (req, res) => {
   };
 
   if (user_id) {
-    res.render("urls_new", templateVars);
+   return res.render("urls_new", templateVars);
   }
   res.redirect("/login");
   
@@ -81,13 +97,20 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
     user
   };
-  
-  
-  res.render('urls_show', templateVars)
+  const userIdURL = urlsForUserId(user, urlDatabase);
+  if (userIdURL) {
+    return res.render('urls_show', templateVars);
+  }
+  res.send("Please log in!")
 });
 
 app.get("/u/:shortURL", (req, res) => {
- 
+  const user_id = req.cookies["id"];
+  const user = users[user_id]
+  const templateVars = { 
+    urls: urlDatabase, 
+    user
+  }
   res.redirect(urlDatabase[req.params.shortURL].longURL);  
  
 });
@@ -143,6 +166,7 @@ app.post("/urls", (req, res) => {
     "longURL": req.body.longURL,
     "userID": userId
 }; //add new generated shortURL to longURL
+
   res.redirect(`/urls/${newURL}`);
   
 });
@@ -150,17 +174,33 @@ app.post("/urls", (req, res) => {
 // edit url
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  urlDatabase[shortURL] = req.body.longURL;
+  const userId = req.cookies["id"]
+  if (!userId) {
+    res.send("You are not authorized!");
+  }
   
-  res.redirect("/urls");
+  const userURL = urlsForUserId(userId, urlDatabase);
+
+  if (userURL !== {}) {
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    return res.redirect("/urls");
+  }
+  res.send("You are not allowed!")
 })
 
 //delete url
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userId = req.cookies["id"]
+  if (!userId) {
+    res.send("You are not authorized!");
+  }
+  const shortURL = urlsForUserId(userId, urlDatabase);
   
-  delete urlDatabase[req.params.shortURL];
-  res.redirect(`/urls`);
-  
+  if(shortURL !== {}) {
+    delete urlDatabase[req.params.shortURL];
+    return res.redirect('/urls');
+  }
+  res.send("You are not authorized!");
 });
 //user login
 app.post("/login", (req, res) => {
