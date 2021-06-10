@@ -4,7 +4,7 @@ const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const {getUserByEmail, generateRandomString, urlsForUserId} = require('./helpers');
-const d = new Date().toLocaleString().split(',')[0]; 
+const d = new Date().toLocaleString().split(',')[0];
 
 app.set("view engine", "ejs");
 
@@ -32,23 +32,23 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  if(req.session.id) {
-    return res.redirect("/urls")
+  if (req.session.id) {
+    return res.redirect("/urls");
   }
   res.redirect("/login");
 });
 
 app.get("/urls", (req, res) => {
   const userId = req.session.id;
-  const user = users[userId]
-  const templateVars = { 
-    urls: urlsForUserId(userId, urlDatabase), 
+  const user = users[userId];
+  const templateVars = {
+    urls: urlsForUserId(userId, urlDatabase),
     user,
     date: d
   };
   if (userId) {
 
-  return res.render('urls_index', templateVars);
+    return res.render('urls_index', templateVars);
   }
   res.status(401).send("Please login!");
 
@@ -56,14 +56,14 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const user_id = req.session.id;
-  const user = users[user_id]
-  const templateVars = { 
-    urls: urlDatabase, 
+  const user = users[user_id];
+  const templateVars = {
+    urls: urlDatabase,
     user
   };
 
   if (user_id) {
-   return res.render("urls_new", templateVars);
+    return res.render("urls_new", templateVars);
   }
   res.redirect("/login");
   
@@ -72,17 +72,17 @@ app.get("/urls/new", (req, res) => {
 //display urls belonged to user
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session.id;
-  const user = users[userId]
-  const shortURL = req.params.shortURL
+  const user = users[userId];
+  const shortURL = req.params.shortURL;
   const userIdURL = urlsForUserId(userId, urlDatabase);
-  const templateVars = { 
-    shortURL, 
+  const templateVars = {
+    shortURL,
     longURL: urlDatabase[shortURL].longURL,
     user,
     urlDatabase
   };
   
-  if(!userId || !userIdURL[shortURL]) {
+  if (!userId || !userIdURL[shortURL]) {
     return res.status(401).send("You are not allowed!");
   }
   res.render('urls_show', templateVars);
@@ -91,13 +91,13 @@ app.get("/urls/:shortURL", (req, res) => {
 //redirect shortURL to longURL
 app.get("/u/:shortURL", (req, res) => {
   const user_id = req.session.id;
-  const user = users[user_id]
-  const templateVars = { 
-    urls: urlDatabase, 
+  const user = users[user_id];
+  const templateVars = {
+    urls: urlDatabase,
     user
-  }
-  if( urlDatabase[req.params.shortURL] && user_id) {
-    return res.redirect(urlDatabase[req.params.shortURL].longURL);  
+  };
+  if (urlDatabase[req.params.shortURL] && user_id) {
+    return res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
   res.status(404).send("Page not Found!");
 
@@ -106,16 +106,16 @@ app.get("/u/:shortURL", (req, res) => {
 //generate short urls and associate with user
 app.post("/urls", (req, res) => {
   const userId = req.session.id;
-  if(userId) {
-    const newURL = generateRandomString(); 
+  if (userId) {
+    const newURL = generateRandomString();
     //generate random shortURL
     urlDatabase[newURL] = {
-    "longURL": req.body.longURL,
-    "userID": userId
+      "longURL": req.body.longURL,
+      "userID": userId
     }; //add new generated shortURL to longURL
     return res.redirect(`/urls/${newURL}`);
   }
-  res.status(401).send("Please log in!")
+  res.status(401).send("Please log in!");
 });
 
 // edit url
@@ -132,7 +132,7 @@ app.post("/urls/:id", (req, res) => {
     urlDatabase[shortURL].longURL = req.body.longURL;
     return res.redirect("/urls");
   }
-  res.send("You are not allowed!")
+  res.send("You are not allowed!");
 });
 
 //delete url
@@ -143,7 +143,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
   const shortURL = urlsForUserId(userId, urlDatabase);
   
-  if(shortURL !== {}) {
+  if (shortURL !== {}) {
     delete urlDatabase[req.params.shortURL];
     return res.redirect('/urls');
   }
@@ -153,15 +153,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //GET /login
 app.get("/login", (req, res) => {
   const user_id = req.session.id;
-  const user = users[user_id]
-  const templateVars = { 
-    urls: urlDatabase, 
+  const user = users[user_id];
+  const templateVars = {
+    urls: urlDatabase,
     user
   };
   if (user_id) {
     return res.redirect("/urls");
   }
-  res.render("urls_login", templateVars)
+  res.render("urls_login", templateVars);
 });
 
 // ----user login ----
@@ -170,7 +170,7 @@ app.post("/login", (req, res) => {
   const userPassword = req.body.password;
   const user = getUserByEmail(userEmail, users);
 
-  if(!user) {
+  if (!user) {
 
     return res.status(403).send("Email cannot be found");
   }
@@ -180,7 +180,7 @@ app.post("/login", (req, res) => {
       return res.redirect("/urls");
     }
   }
-    res.status(403).send("Email or password not matching");
+  res.status(403).send("Email or password not matching");
 });
 
 app.post("/logout", (req, res) => {
@@ -192,9 +192,9 @@ app.post("/logout", (req, res) => {
 
 app.get("/register", (req, res) => {
   const user_id = req.session.id;
-  const user = users[user_id]
-  const templateVars = { 
-    urls: urlDatabase, 
+  const user = users[user_id];
+  const templateVars = {
+    urls: urlDatabase,
     user
   };
   res.render("urls_registration", templateVars);
@@ -209,7 +209,7 @@ app.post("/register", (req,res) => {
   if (userEmail === "" || userPassword === "") {
     res.status(400).send("Please fill in email and password");
   }
-  if(!getUserByEmail(userEmail, users)) {
+  if (!getUserByEmail(userEmail, users)) {
     users[userID] = {
       id: userID,
       email: userEmail,
@@ -218,9 +218,9 @@ app.post("/register", (req,res) => {
     req.session.id = userID;
     return res.redirect("/urls");
   }
-   res.status(400).send("Already registered with this email address.")
+  res.status(400).send("Already registered with this email address.");
   
-})
+});
 
 
 app.listen(PORT, () => {
