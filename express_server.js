@@ -4,7 +4,7 @@ const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const {getUserByEmail, generateRandomString, urlsForUserId} = require('./helpers');
-const d = new Date().toLocaleString('en-GB').split(',')[0];
+const d = new Date().toLocaleString("en-US", {timeZone: "America/New_York"}).split(',')[0];
 
 app.set("view engine", "ejs");
 
