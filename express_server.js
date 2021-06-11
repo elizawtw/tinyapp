@@ -4,7 +4,7 @@ const PORT = 8080; // default port 8080
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const {getUserByEmail, generateRandomString, urlsForUserId} = require('./helpers');
-const d = new Date().toLocaleString().split(',')[0];
+const d = new Date().toLocaleString('en-GB').split(',')[0];
 
 app.set("view engine", "ejs");
 
@@ -96,9 +96,9 @@ app.get("/u/:shortURL", (req, res) => {
     urls: urlDatabase,
     user
   };
-  if (urlDatabase[req.params.shortURL] && user_id) {
+  if (urlDatabase[req.params.shortURL]) {
     return res.redirect(urlDatabase[req.params.shortURL].longURL);
-  }
+  } 
   res.status(404).send("Page not Found!");
 
 });
